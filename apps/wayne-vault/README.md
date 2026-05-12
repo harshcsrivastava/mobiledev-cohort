@@ -24,3 +24,4 @@ You are required to create 2 separate views/screens UI for the Notes App. You do
 ## Image Preview
 
 ![Home View 1 Preview](./assets/Home_View_1.png)
+![Home View 2 Preview](./assets/Home_View_2.png)
