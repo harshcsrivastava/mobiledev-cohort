@@ -3,9 +3,8 @@ import AppLoading from "expo-app-loading";
 import {
     useFonts,
     Inter_400Regular,
-    Inter_700Bold,
     Inter_900Black,
-    Inter_900Black_Italic,
+    Inter_300Light,
 } from "@expo-google-fonts/inter";
 import React, { useState } from "react";
 import {
@@ -15,46 +14,34 @@ import {
     View,
     useColorScheme,
     FlatList,
-    ScrollView
+    TextInput,
+    ListRenderItem,
+    KeyboardAvoidingView,
+    Platform,
+    Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const themes = {
-    biege: {
-        background: "#f6ecc9",
-        card: "#eb7a52",
-        text: "#000",
-        subtext: "#281c1c",
-        accent: "#f3cf49",
-    },
-    light: {
-        background: "#FFFFFF",
-        card: "#F5F5F5",
-        text: "#1A1A1A",
-        subtext: "#666666",
-        accent: "#6C63FF",
-    },
-    dark: {
-        background: "#111",
-        card: "#1E1E1E",
-        text: "#FFFFFF",
-        subtext: "#AAAAAA",
-        accent: "#9D97FF",
-    },
-};
-
-export interface notes {
-    id: number,
-    title: string,
-    items: string[],
-    backgroundColor: string
+export interface Note {
+    id: string;
+    title: string;
+    items?: string[];
+    content?: string;
+    backgroundColor: string;
+    createdAt: Date;
 }
-const notesData = [
+function getRandomDate(start: Date, end: Date): Date {
+    return new Date(
+        start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+    );
+}
+const notesData: Note[] = [
     {
         id: "1",
         title: "Plan for The Day",
         items: ["Buy food", "GYM", "Invest"],
         backgroundColor: "#eb7a52",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "2",
@@ -62,12 +49,14 @@ const notesData = [
         content:
             "Lorem ipsum dolor sit amet consectetur adipisicing elit. Adipisci delectus, voluptas mollitia libero ipsa amet sapiente aperiam voluptatem blanditiis.",
         backgroundColor: "#f3cf49",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "3",
         title: "Work Tasks",
         items: ["Finish React project", "Review PRs", "Team meeting at 4 PM"],
         backgroundColor: "#6C63FF",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "4",
@@ -75,12 +64,14 @@ const notesData = [
         content:
             "Today I learned about React Native styling. It’s amazing how flexible flexbox layouts are for mobile UI.",
         backgroundColor: "#9D97FF",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "5",
         title: "Shopping List",
         items: ["Milk", "Eggs", "Bread", "Coffee"],
         backgroundColor: "#52b788",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "6",
@@ -88,12 +79,14 @@ const notesData = [
         content:
             "Brainstorming app concepts: Batman-themed notes app, AI-powered journaling, minimalist productivity dashboard.",
         backgroundColor: "#ff6f61",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "7",
         title: "Travel Plans",
         items: ["Book flight tickets", "Reserve hotel", "Pack essentials"],
         backgroundColor: "#ffd166",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
     {
         id: "8",
@@ -101,91 +94,173 @@ const notesData = [
         content:
             "React Hook Form makes handling inputs easier. Remember to explore useForm, register, and formState APIs.",
         backgroundColor: "#118ab2",
+        createdAt: getRandomDate(new Date(2025, 0, 1), new Date()),
     },
 ];
 
 const HomeScreen = () => {
-    const systemScheme = useColorScheme(); //light \ dark
+    const systemScheme = useColorScheme();
     const [manualDark, setManualDark] = useState<boolean | null>(null);
+    const [search, setSearch] = useState<string>("");
+
     const [fontsLoaded] = useFonts({
         InterRegular: Inter_400Regular,
         InterBold: Inter_900Black,
+        InterLight: Inter_300Light,
     });
-
     if (!fontsLoaded) return <AppLoading />;
 
     const isDark = manualDark !== null ? manualDark : systemScheme === "dark";
+    const theme = isDark
+        ? {
+              background: "#111",
+              card: "#2e2e2e",
+              text: "#ed1404",
+              subtext: "#aaa",
+              accent: "#9D97FF",
+          }
+        : {
+              background: "#f6ecc9",
+              card: "#eb7a52",
+              text: "#000",
+              subtext: "#281c1c",
+              accent: "#f3cf49",
+          };
 
-    const theme = isDark ? themes.dark : themes.biege;
+    const images = {
+        batman: require("@/assets/batman.png"),
+        light: require("@/assets/batman_red_logo.png"),
+    };
 
-    console.log(systemScheme);
+    <Image source={systemScheme === "dark" ? images.batman : images.light} />;
 
-    const renderCard = ({ item }: notes[]) => (
+    const renderCard: ListRenderItem<Note> = ({ item, index }) => (
         <View
             style={[
                 styles.notesCard,
-                item.id % 2 !== 0 ? styles.leftCard : styles.rightCard,
+                index % 2 === 0 ? styles.leftCard : styles.rightCard,
                 { backgroundColor: item.backgroundColor },
             ]}
         >
             <Text style={styles.cardTitle}>{item.title}</Text>
-
-            {/* Checklist style notes */}
-            {item.items &&
-                item.items.map((task, index) => (
-                    <Text key={index}>• {task}</Text>
-                ))}
-
-            {/* Paragraph style notes */}
+            {item.items?.map((task, i) => (
+                <Text key={i}>• {task}</Text>
+            ))}
             {item.content && (
                 <Text numberOfLines={3} style={styles.cardContent}>
                     {item.content}
                 </Text>
             )}
+
+            <Text style={styles.timestamp}>
+                {item.createdAt.toLocaleDateString()}{" "}
+                {/* {item.createdAt.toLocaleTimeString()} */}
+            </Text>
         </View>
     );
+
+    // Filter notes by search
+    const filteredNotes = notesData.filter(
+        (note) =>
+            note.title.toLowerCase().includes(search.toLowerCase()) ||
+            note.items?.some((task) =>
+                task.toLowerCase().includes(search.toLowerCase()),
+            ) ||
+            note.content?.toLowerCase().includes(search.toLowerCase()),
+    );
+
     return (
         <SafeAreaView
             style={[styles.container, { backgroundColor: theme.background }]}
         >
-            <StatusBar style={manualDark ? "light" : "dark"} />
-            {/* Header */}
-            <View style={[styles.card, { backgroundColor: theme.card }]}>
-                <Text style={[styles.title, { color: theme.text }]}>
-                    {isDark ? "🌙 Dark Mode" : "☀️ Light Mode"}
-                </Text>
-                <Text style={[styles.subtitle, { color: theme.subtext }]}>
-                    System preference: {systemScheme ?? "unknown"}
-                </Text>
-            </View>
-
-            {/* Toggle Row */}
-            <View style={[styles.card, { backgroundColor: theme.card }]}>
-                <View style={styles.row}>
-                    <Text style={[styles.label, { color: theme.text }]}>
-                        Override system theme
-                    </Text>
-                    <Switch
-                        value={manualDark ?? systemScheme === "dark"}
-                        onValueChange={setManualDark}
-                        trackColor={{ false: "#ddd", true: theme.accent }}
-                        thumbColor="white"
-                    />
-                </View>
-            </View>
-            <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
-            <View style={styles.rowContainer}>
-
+            <StatusBar style={isDark ? "light" : "dark"} />
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
                 <FlatList
-                    data={notesData}
+                    data={filteredNotes}
                     numColumns={2}
-                    contentContainerStyle={styles.rowContainer}
                     keyExtractor={(item) => item.id}
                     renderItem={renderCard}
+                    contentContainerStyle={styles.rowContainer}
+                    ListHeaderComponent={
+                        <>
+                            {/* Header */}
+                            <View style={[styles.card]}>
+                                <Text
+                                    style={[
+                                        styles.title,
+                                        { color: theme.text },
+                                    ]}
+                                >
+                                    <Image
+                                        source={!isDark ? images.batman : images.light}
+                                        style={{ width: "20", height: "10" }}
+                                    />
+                                    Wayne Vault
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.subtitle,
+                                        { color: theme.subtext },
+                                    ]}
+                                >
+                                    System Identity:{" "}
+                                    {isDark ? "Batman" : "Bruce Wayne"}
+                                </Text>
+                            </View>
+
+                            {/* Toggle Row */}
+                            <View
+                                style={[
+                                    styles.card,
+                                    { backgroundColor: theme.card },
+                                ]}
+                            >
+                                <View style={styles.row}>
+                                    <Text
+                                        style={[
+                                            styles.label,
+                                            { color: theme.text },
+                                        ]}
+                                    >
+                                        Override system theme
+                                    </Text>
+                                    <Switch
+                                        value={
+                                            manualDark ??
+                                            systemScheme === "dark"
+                                        }
+                                        onValueChange={setManualDark}
+                                        trackColor={{
+                                            false: "#ddd",
+                                            true: theme.accent,
+                                        }}
+                                        thumbColor="white"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Search Bar */}
+                            <View style={{ padding: 12 }}>
+                                <TextInput
+                                    placeholder="Enter Secret..."
+                                    placeholderTextColor={"white"}
+                                    value={search}
+                                    onChangeText={setSearch}
+                                    style={{
+                                        borderWidth: 1,
+                                        borderColor: isDark ? "#ccc" : "#411900", 
+                                        borderRadius: 8,
+                                        padding: 12,
+                                        backgroundColor: isDark ? "#000000" : "#555436",
+                                    }}
+                                />
+                            </View>
+                        </>
+                    }
                 />
-            </View>
-           
-            </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -200,11 +275,7 @@ const styles = StyleSheet.create({
     label: { fontSize: 16, fontFamily: "InterRegular" },
 
     rowContainer: {
-        // flexDirection: "row", // 👈 side by side
-        // justifyContent: "space-between",
-        // padding: 16,
         gap: 12,
-        // padding: 2,
     },
     notesCard: {
         flex: 1,
@@ -236,5 +307,11 @@ const styles = StyleSheet.create({
     cardContent: {
         fontSize: 14,
         marginTop: 4,
+    },
+    timestamp: {
+        fontSize: 12,
+        color: "#000000",
+        marginTop: 8,
+        fontFamily: "InterLight",
     },
 });
