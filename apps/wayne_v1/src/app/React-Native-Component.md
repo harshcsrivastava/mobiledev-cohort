@@ -176,3 +176,163 @@ export default function App() {
     );
 }
 ```
+
+## 4. Safe Area View
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+function SafeArea() {
+    return (
+        <SafeAreaView
+            edges={["left", "top"]}
+            style={{ flex: 1, backgroundColor: "cyan" }}
+        >
+            <View>
+                <Text>Hi</Text>
+            </View>
+        </SafeAreaView>
+    );
+}
+
+const index = () => {
+    return <SafeArea />;
+};
+
+export default index;
+
+const styles = StyleSheet.create({});
+```
+
+## 5. Insets with useSafeAreaInsets() with StausBar
+
+```tsx
+import { StyleSheet, Text, View, StatusBar } from "react-native";
+import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+
+const HomeScreen = () => {
+    const insets = useSafeAreaInsets(); // pixalated value milti hai
+
+    console.log(insets); // { top: 0, left: 0, right: 0, bottom: 0 }
+
+    return (
+        <View
+            style={{
+                flex: 1,
+                backgroundColor: "pink",
+                paddingTop: insets.top + 30,
+            }}
+        >
+            <StatusBar barStyle={"dark-content"} />
+            // barStyle: "default" | "light-content" | "dark-content" //
+            backgroundColor: Android only // hidden: hide/show the bar //
+            translucent: overlay content under the bar (Android)
+            <StatusBar style="light" /> //style: "auto" | "inverted" | "light" |
+            "dark"
+            <Text>HomeScreen</Text>
+        </View>
+    );
+};
+
+export default HomeScreen;
+
+const styles = StyleSheet.create({});
+```
+
+## 6. StyleSheet - Create
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+
+export default function App() {
+    return (
+        <View style={styles.container}>
+            <Text style={styles.text}>Hello React Native</Text>
+        </View>
+    );
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "beige",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    text: {
+        fontSize: 18,
+        fontFamily: "Montserrat",
+    },
+});
+```
+
+## 7. StyleSheet - Compose
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+
+export default function App() {
+    const isActive = true;
+
+    const buttonStyle = StyleSheet.compose(
+        styles.button,
+        isActive ? styles.activeButton : null,
+    );
+    return (
+        <View style={styles.container}>
+            <Text style={buttonStyle}>Hello React ssNative</Text>
+        </View>
+    );
+}
+const styles = StyleSheet.create({
+    container: { flex: 1, justifyContent: "center", alignItems: "center" },
+    button: {
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 10,
+        backgroundColor: "#ccc",
+    },
+    activeButton: { backgroundColor: "#6C63FF" },
+    buttonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+});
+```
+
+## 8. StyleSheet - Flattened
+
+```tsx
+import { StyleSheet, Text, View } from "react-native";
+
+const styleA = StyleSheet.create({ text: { color: "red", fontSize: 16 } });
+const styleB = StyleSheet.create({
+    text: { fontSize: 24, fontWeight: "bold" },
+});
+
+const flat = StyleSheet.flatten([styleA.text, styleB.text]);
+
+export default function App() {
+    return <Text style={flat}>Flattended Style</Text>;
+}
+```
+
+## n.
+
+```tsx
+
+```
+
+## n.
+
+```tsx
+
+```
+
+# Template
+
+## n.
+
+```tsx
+
+```
